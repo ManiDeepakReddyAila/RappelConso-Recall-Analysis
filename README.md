@@ -2,6 +2,16 @@
 
 RappelConso Data Pipeline is an end-to-end data processing solution designed to ingest, simulate streaming, transform, and analyze recall data from the French government’s RappelConso API. This project leverages Google Cloud’s scalable services, including Cloud Functions, Pub/Sub, Dataproc, and BigQuery, to deliver real-time insights and enable advanced analytics for product recalls.
 
+## Tools and Technologies Used
+
+![Python](https://img.shields.io/badge/Python-3.x-blue?logo=python&logoColor=white)
+![Google Cloud Functions](https://img.shields.io/badge/Google%20Cloud%20Functions-4285F4?logo=google-cloud&logoColor=white)
+![Google Dataproc](https://img.shields.io/badge/Google%20Dataproc-red?logo=google-cloud&logoColor=white)
+![BigQuery](https://img.shields.io/badge/BigQuery-green?logo=google-cloud&logoColor=white)
+![Pub/Sub Lite](https://img.shields.io/badge/Pub/Sub%20Lite-orange?logo=google-cloud&logoColor=white)
+![Google Cloud Translate](https://img.shields.io/badge/Google%20Cloud%20Translate-white?logo=google-cloud&logoColor=black)
+![PySpark](https://img.shields.io/badge/PySpark-F9A03C?logo=apachespark&logoColor=white)
+
 ## Table of Contents
 
 - [Project Overview](#project-overview)
@@ -19,7 +29,7 @@ RappelConso Data Pipeline automates the ingestion and simulation of streaming re
 
 The project follows a modular and scalable architecture designed for efficient data processing:
 
-![RappelConso Data Pipeline Architecture](architecture_diagram.png)
+![RappelConso Data Pipeline Architecture](https://github.com/ManiDeepakReddyAila/RappelConso-Recall-Analysis/blob/master/rappelconso_data_pipeline_architecture.png)
 
 1. **Cloud Function**: Ingests data by calling the RappelConso API and publishes simulated streaming messages to Google Pub/Sub.
 2. **Google Pub/Sub**: Serves as a messaging layer, facilitating asynchronous communication between components.
