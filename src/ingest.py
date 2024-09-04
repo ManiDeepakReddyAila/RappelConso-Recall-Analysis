@@ -1,4 +1,3 @@
-import time
 import requests
 import json
 import re
@@ -17,6 +16,7 @@ LOCATION = "us-central1"
 TOPIC_NAME = "rappelconso-lite-topic"
 LIMIT = 10
 
+# Load credentials
 credentials = service_account.Credentials.from_service_account_file(
     'path to json'
 )
@@ -26,6 +26,7 @@ topic_path = TopicPath(PROJECT_ID, location, TOPIC_NAME)
 client = translate.TranslationServiceClient(credentials=credentials)
 
 def get_offset():
+    """Reads the current offset from a JSON file."""
     try:
         with open(OFFSET_FILE) as file:
             return json.load(file).get('offset', 0)
@@ -33,39 +34,40 @@ def get_offset():
         return 0
 
 def update_offset(offset):
+    """Updates the offset in the JSON file."""
     with open(OFFSET_FILE, 'w') as file:
         json.dump({"offset": offset}, file)
 
-def fetch_and_publish():
-    while True:
-        url = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/rappelconso0/records"
-        offset = get_offset()
-        params = {
-            'limit': LIMIT,
-            'offset': offset
-        }
+def fetch_and_publish(request):
+    """Fetches data from the RappelConso API, transforms it, and publishes to Pub/Sub Lite."""
+    url = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/rappelconso0/records"
+    offset = get_offset()
+    params = {
+        'limit': LIMIT,
+        'offset': offset
+    }
 
-        response = requests.get(url, params=params)
-        records = response.json().get('results', [])
+    response = requests.get(url, params=params)
+    records = response.json().get('results', [])
 
-        if not records:
-            print("No new records available. Retrying...")
-        else:
-            with PublisherClient(credentials=credentials) as publisher_client:
-                for record in records:
-                    transformed_record = transform_row(record)
-                    print(transformed_record)
-                    data = json.dumps(transformed_record).encode("utf-8")
-                    try:
-                        api_future = publisher_client.publish(topic_path, data)
-                        message_id = api_future.result()
-                        print(f"Published a message to {topic_path} with ID: {message_id}")
-                    except Exception as e:
-                        print(f"Failed to publish message: {e}")
+    if not records:
+        print("No new records available.")
+    else:
+        with PublisherClient(credentials=credentials) as publisher_client:
+            for record in records:
+                transformed_record = transform_row(record)
+                print(transformed_record)
+                data = json.dumps(transformed_record).encode("utf-8")
+                try:
+                    api_future = publisher_client.publish(topic_path, data)
+                    message_id = api_future.result()
+                    print(f"Published a message to {topic_path} with ID: {message_id}")
+                except Exception as e:
+                    print(f"Failed to publish message: {e}")
 
-                update_offset(offset + LIMIT)
+        update_offset(offset + LIMIT)
 
-        time.sleep(60)
+    return "Fetch and publish completed."
 
 def clean_text(text):
     """Clean and normalize text data by removing excessive whitespace and newline characters."""
@@ -122,6 +124,3 @@ def transform_row(record):
         "image_url": record.get("liens_vers_les_images"),
     }
     return transformed_record
-
-if __name__ == "__main__":
-    fetch_and_publish()
